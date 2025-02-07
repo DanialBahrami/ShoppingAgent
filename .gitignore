@@ -1,0 +1,15 @@
+# Ignore virtual environments
+venv/
+venv*/
+
+# Ignore FAISS folders
+faiss_image_store/
+faiss_text_store/
+
+# Ignore data folders
+data/
+data_small/
+backend/static/
+
+# Ignore environment files
+.env

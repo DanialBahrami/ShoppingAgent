@@ -1,0 +1,15 @@
+langchain
+langchain-openai
+langchain-community
+openai
+gradio
+streamlit
+faiss-cpu
+pandas
+Pillow
+transformers
+sentence-transformers
+pydantic
+psycopg2
+"uvicorn[standard]"
+fastapi
