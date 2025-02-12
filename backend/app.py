@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import psycopg2
 from config import DATABASE_URL
-from main_n import create_agent, process_query, parser
+from agent import create_agent_executor, process_query
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
@@ -24,7 +24,7 @@ conn = psycopg2.connect(DATABASE_URL)
 cursor = conn.cursor()
 
 # Initialize AI Agent
-agent, system_msg = create_agent()
+agent = create_agent_executor()
 
 @app.get("/")
 def root():
@@ -59,7 +59,7 @@ def get_product(product_id: int):
 
 @app.get("/search/{query}")
 def search_products(query: str):
-    """AI-powered product search using FAISS vector stores."""
-    rec = process_query(agent, parser, query)
+    """AI-powered product search using ChromaDB vector stores."""
+    rec = process_query(agent, query)
     # 'rec' is now a dict with {message: str, products: list}
     return {"recommendations": rec}

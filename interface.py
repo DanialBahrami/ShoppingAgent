@@ -1,5 +1,5 @@
 import gradio as gr
-from main import load_text_index, load_image_index, create_conversational_agent
+from main_v1 import load_text_index, load_image_index, create_conversational_agent
 
 # Load vector stores and create agent
 text_store = load_text_index()

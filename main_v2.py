@@ -166,54 +166,53 @@ def create_agent():
     
     llm = ChatOpenAI(
         openai_api_key=openai_api_key,
-        model_name="gpt-4",
-        temperature=0.3
+        model_name="chatgpt-4o-latest",
+        temperature=0
     )
-    system_prompt = """
-                        
-You are a helpful shopping assistant. Your job is to help customers find products by either answering directly or by calling one of your two tools:
-1. "Product Search" – use this for queries about product names, categories, or usage.
-2. "Appearance Product Search" – use this for queries about product appearance (color, pattern, style).
+    raw_system_prompt = """
+    You are a helpful shopping assistant. Your task is to answer customer queries ONLY by outputting a valid JSON object with exactly two keys: "message" and "products". Do not output any internal reasoning or extra text.
 
-IMPORTANT:
-• Every response MUST be a valid JSON object with exactly two keys: "message" and "products".
-• If you call a tool, return the tool’s JSON output exactly.
-• If you do not call a tool, return a JSON like: {"message": "<your answer to the customer>", "products": []}.
-• Do not include any extra text, explanations, or formatting outside of the JSON.
-• Use the following examples as guidance:
+    You have access to two tools:
+    1. "Product Search" – for queries about product names, categories, or usage.
+    2. "Appearance Product Search" – for queries about product appearance (color, pattern, style).
 
-Example 1:
-Human: Hi
-AI: {"message": "Hi, how can I help you today?", "products": []}
+    If you need to call a tool, return its JSON output exactly.
+    If you do NOT use a tool, output a JSON object exactly like this:
+    {{"message": "<your answer>", "products": []}}
 
-Example 2:
-Human: I need hiking shoes
-AI: {"message": "Sure, here are some hiking shoes. Do you have a preferred brand or usage in mind?", "products": [7753, 37241, 39263]}
+    Format Instructions:
+    {format_instructions}
 
-Example 3:
-Human: I'm looking for a black and white pair for cold days
-AI: {"message": "Great! Here are some black and white options that are perfect for cold days:", "products": [12345, 67890, 23456, 78901]}
+    Examples:
+    Example 1:
+    User: Hi
+    AI: {{"message": "Hi, how can I help you today?", "products": []}}
 
-Remember: Your final output must be ONLY the JSON string with these two keys and nothing else.
+    Example 2:
+    User: I need hiking shoes.
+    AI: {{"message": "Sure, here are some hiking shoes. Do you have a preferred brand or usage in mind?", "products": [7753, 37241, 39263]}}
 
-                """
-    #system_message = (
-    #    "You are a helpful shopping assistant. Answer user queries about products. "
-    #    "You can call the given tools to retrieve product recommendations. "
-    #    ".\n\n"
-    #    f"Format your final answer using these instructions:\n{format_instructions}\n"
-    #)
+    Example 3:
+    User: I'm looking for a black and white pair for cold days.
+    AI: {{"message": "Great! Here are some black and white options that are perfect for cold days:", "products": [12345, 67890, 23456, 78901]}}
+
+    Remember: Your FINAL output must be ONLY the JSON object.
+    """
+    # Inject format_instructions into the system prompt:
+    system_prompt = raw_system_prompt.format(format_instructions=format_instructions)
     suffix = """
             IMPORTANT:
-            - If you used a tool, just return the tool's JSON output verbatim. 
-            - If you didn't use a tool, return {{"message": "message", "products": [IDs]}}.
-            - No extra explanation or text outside the JSON.
+            - Use Provided Tools
+            - Your final answer MUST be only a valid JSON object with exactly two keys: "message" and "products".
+            - Do not output any internal reasoning or extra text.
             """
+
     
     agent = initialize_agent(
         tools=tools,
         llm=llm,
-        agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+        #agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         memory=memory,
         verbose=True,
         handle_parsing_errors=True,
@@ -233,7 +232,7 @@ def run_interactive():
     print("\n=== Welcome to the AI Shopping Assistant! ===\n")
     print("Type 'exit' or 'quit' to stop.\n")
 
-    conversation_history = [SystemMessage(content=system_message_text)]
+    #conversation_history = [SystemMessage(content=system_message_text)]
     
     while True:
         user_input = input("You: ")
@@ -241,10 +240,10 @@ def run_interactive():
             print("Goodbye!")
             break
 
-        
-        conversation_history.append(HumanMessage(content=user_input))
-        
-        raw_output_dict = agent.invoke({"input": user_input})
+        #conversation_history.append(HumanMessage(content=user_input))
+
+        raw_output_dict = agent.invoke({"input": user_input}, eturn_intermediate_steps=True)
+        print("\nDEBUG OUTPUT:\n", raw_output_dict)
         raw_output = raw_output_dict["output"]
 
         # 7) Parse final text with the Pydantic parser
@@ -255,9 +254,9 @@ def run_interactive():
             structured_output = {"message": raw_output, "products": []}
         
         # Display final structured output to user
-        print(f"\nAI (Structured): {structured_output}\n")
+        print(f"\nAI: {structured_output}\n")
 
-        conversation_history.append(AIMessage(content=raw_output))
+        #conversation_history.append(AIMessage(content=raw_output))
 
 
 def process_query(agent: AgentExecutor, parser: PydanticOutputParser, user_input: str) -> dict:

@@ -16,6 +16,8 @@ DATA_PATH = "data_small/styles.csv"
 IMAGES_FOLDER = "data_small/images"
 VECTORSTORE_TEXT_PATH = "faiss_text_store"
 VECTORSTORE_IMAGE_PATH = "faiss_image_store"
+VECTORSTORE_TEXT_PATH_Chroma = "chroma_text_store"
+VECTORSTORE_IMAGE_PATH_Chroma = "chroma_image_store"
 
 # Image Path for database
 IMAGE_DIR = "backend/static/images/"

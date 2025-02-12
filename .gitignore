@@ -6,6 +6,10 @@ venv*/
 faiss_image_store/
 faiss_text_store/
 
+# Ignore FAISS folders
+chroma_image_store/
+chroma_text_store/
+
 # Ignore data folders
 data/
 data_small/

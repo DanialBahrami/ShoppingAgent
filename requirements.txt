@@ -13,3 +13,4 @@ pydantic
 psycopg2
 "uvicorn[standard]"
 fastapi
+chromadb
