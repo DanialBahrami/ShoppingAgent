@@ -67,6 +67,15 @@ def create_vectordb():
         text_docs.append(t_doc)
         i_doc = Document(page_content=f"Image for {product_name}", metadata={"id": row["id"], "productDisplayName": product_name, "image_path": row["image_path"]})
         image_docs.append(i_doc)
+    
+    # Remove existing text vector store if it exists
+    if os.path.exists(VECTORSTORE_TEXT_PATH_Chroma):
+        text_vector_store = Chroma(
+            persist_directory=VECTORSTORE_TEXT_PATH_Chroma,
+            embedding_function=text_embedding_model,
+            collection_name="text_products"
+        )
+        text_vector_store.delete_collection()
 
     os.makedirs(VECTORSTORE_TEXT_PATH_Chroma, exist_ok=True)
     text_vector_store = Chroma.from_documents(
@@ -76,6 +85,15 @@ def create_vectordb():
         collection_name="text_products"
     )
     text_vector_store.persist()
+    
+    # Remove existing image vector store if it exists
+    if os.path.exists(VECTORSTORE_IMAGE_PATH_Chroma):
+        image_vector_store = Chroma(
+            persist_directory=VECTORSTORE_IMAGE_PATH_Chroma,
+            embedding_function=clip_embedding_model,
+            collection_name="image_products"
+        )
+        image_vector_store.delete_collection()
 
     os.makedirs(VECTORSTORE_IMAGE_PATH_Chroma, exist_ok=True)
     image_vector_store = Chroma.from_documents(

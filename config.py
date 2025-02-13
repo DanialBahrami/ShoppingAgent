@@ -12,8 +12,8 @@ langchain_api_key = os.getenv("LANGCHAIN_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Other configs
-DATA_PATH = "data_small/styles.csv"
-IMAGES_FOLDER = "data_small/images"
+DATA_PATH = "data/styles.csv"
+IMAGES_FOLDER = "data/images"
 VECTORSTORE_TEXT_PATH = "faiss_text_store"
 VECTORSTORE_IMAGE_PATH = "faiss_image_store"
 VECTORSTORE_TEXT_PATH_Chroma = "chroma_text_store"

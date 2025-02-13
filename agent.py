@@ -167,9 +167,7 @@ def create_agent_executor():
     # Wrap in AgentExecutor to handle memory and execution
     return AgentExecutor(agent=agent, tools=tools, memory=memory, verbose=True)
 
-# -----------------------------------------------------------------------------
-# 6) Main interactive loop.
-# -----------------------------------------------------------------------------
+
 def run_interactive():
     agent_executor = create_agent_executor()
     print("\n=== Welcome to the RAG Shopping Assistant! ===\n")
@@ -190,19 +188,44 @@ def run_interactive():
             structured_output = {"message": raw_output, "products": []}
         print(f"\nAI: {structured_output}\n")
 
+from langchain_openai import ChatOpenAI
+from langchain.output_parsers import RetryOutputParser
+
+retry_llm = ChatOpenAI(
+    openai_api_key=openai_api_key,
+    model_name="gpt-4-turbo",
+    temperature=0
+)
+
+retry_parser = RetryOutputParser.from_llm(
+    parser=parser, 
+    llm=retry_llm,
+    max_retries=3
+)
 
 def process_query(agent: AgentExecutor, query: str) -> dict:
-    
-    raw_output_dict = agent.invoke({"input": query})
-    raw_output = raw_output_dict["output"]
+
     try:
-        structured_output = parser.parse(raw_output)
-        return structured_output.dict()  
-    except OutputParserException:
-        return {
-            "message": raw_output,
-            "products": []
-        }
+        raw_output_dict = agent.invoke({"input": query})
+        raw_output = raw_output_dict.get("output", "")
+    except Exception as agent_exception:
+        return {"message": f"Agent invocation failed: {agent_exception}", "products": []}
+    
+    try:
+
+        structured_output = retry_parser.parse_with_prompt(
+            completion=raw_output, 
+            prompt_value=query  # Using the query as context for the retry correction.
+        )
+        return structured_output.dict()
+
+    except Exception as retry_exception:
+        try:
+            structured_output = parser.parse(raw_output)
+            return structured_output.dict()
+        except Exception as parse_exception:
+            # If all parsing attempts fail, return a fallback response.
+            return {"message": raw_output, "products": []}
 
 
 if __name__ == "__main__":
