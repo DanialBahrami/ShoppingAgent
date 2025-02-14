@@ -18,6 +18,7 @@ VECTORSTORE_TEXT_PATH = "faiss_text_store"
 VECTORSTORE_IMAGE_PATH = "faiss_image_store"
 VECTORSTORE_TEXT_PATH_Chroma = "chroma_text_store"
 VECTORSTORE_IMAGE_PATH_Chroma = "chroma_image_store"
+VECTORSTORE_IMAGE_DESC_PATH_Chroma = "chroma_image_desc_store"
 
 # Image Path for database
 IMAGE_DIR = "backend/static/images/"
